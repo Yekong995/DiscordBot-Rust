@@ -8,15 +8,8 @@ use serenity::client::bridge::gateway::{ShardId, ShardManager};
 use serenity::framework::standard::buckets::{LimitedFor, RevertBucket};
 use serenity::framework::standard::macros::{check, command, group, help, hook};
 use serenity::framework::standard::{
-    help_commands,
-    Args,
-    CommandGroup,
-    CommandOptions,
-    CommandResult,
-    DispatchError,
-    HelpOptions,
-    Reason,
-    StandardFramework,
+    help_commands, Args, CommandGroup, CommandOptions, CommandResult, DispatchError, HelpOptions,
+    Reason, StandardFramework,
 };
 use serenity::http::Http;
 use serenity::model::channel::{Channel, Message};
@@ -74,13 +67,18 @@ async fn my_help(
 
 #[hook]
 async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
-    println!("Got command '{}' by user '{}'", command_name, msg.author.name);
+    println!(
+        "Got command '{}' by user '{}'",
+        command_name, msg.author.name
+    );
 
     // Increment the number of times this command has been run once. If
     // the command's name does not exist in the counter, add a default
     // value of 0.
     let mut data = ctx.data.write().await;
-    let counter = data.get_mut::<CommandCounter>().expect("Expected CommandCounter in TypeMap.");
+    let counter = data
+        .get_mut::<CommandCounter>()
+        .expect("Expected CommandCounter in TypeMap.");
     let entry = counter.entry(command_name.to_string()).or_insert(0);
     *entry += 1;
 
@@ -118,7 +116,10 @@ async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError, _com
         if info.is_first_try {
             let _ = msg
                 .channel_id
-                .say(&ctx.http, &format!("Try this again in {} seconds.", info.as_secs()))
+                .say(
+                    &ctx.http,
+                    &format!("Try this again in {} seconds.", info.as_secs()),
+                )
                 .await;
         }
     }
@@ -137,7 +138,10 @@ fn _dispatch_error_no_macro<'fut>(
             if info.is_first_try {
                 let _ = msg
                     .channel_id
-                    .say(&ctx.http, &format!("Try this again in {} seconds.", info.as_secs()))
+                    .say(
+                        &ctx.http,
+                        &format!("Try this again in {} seconds.", info.as_secs()),
+                    )
                     .await;
             }
         };
@@ -149,7 +153,7 @@ fn _dispatch_error_no_macro<'fut>(
 async fn main() {
     // Configure the client with your Discord bot token in the environment.
     // let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
-    let token = "MTAzOTc3MDI3NzM1NTE5NjQxNg.GPsrtA.02-o6P1SbX3tTDQnwwroSCE6WsbRS4MN3oj0Vo";
+    let token = "";
 
     let http = Http::new(&token);
 
@@ -166,64 +170,70 @@ async fn main() {
                 Ok(bot_id) => (owners, bot_id.id),
                 Err(why) => panic!("Could not access the bot id: {:?}", why),
             }
-        },
+        }
         Err(why) => panic!("Could not access application info: {:?}", why),
     };
 
     let framework = StandardFramework::new()
-        .configure(|c| c
-                   .with_whitespace(true)
-                   .on_mention(Some(bot_id))
-                   .prefix("~")
-                   // In this case, if "," would be first, a message would never
-                   // be delimited at ", ", forcing you to trim your arguments if you
-                   // want to avoid whitespaces at the start of each.
-                   .delimiters(vec![", ", ","])
-                   // Sets the bot's owners. These will be used for commands that
-                   // are owners only.
-                   .owners(owners))
-
-    // Set a function to be called prior to each command execution. This
-    // provides the context of the command, the message that was received,
-    // and the full name of the command that will be called.
-    //
-    // Avoid using this to determine whether a specific command should be
-    // executed. Instead, prefer using the `#[check]` macro which
-    // gives you this functionality.
-    //
-    // **Note**: Async closures are unstable, you may use them in your
-    // application if you are fine using nightly Rust.
-    // If not, we need to provide the function identifiers to the
-    // hook-functions (before, after, normal, ...).
+        .configure(|c| {
+            c.with_whitespace(true)
+                .on_mention(Some(bot_id))
+                .prefix("~")
+                // In this case, if "," would be first, a message would never
+                // be delimited at ", ", forcing you to trim your arguments if you
+                // want to avoid whitespaces at the start of each.
+                .delimiters(vec![", ", ","])
+                // Sets the bot's owners. These will be used for commands that
+                // are owners only.
+                .owners(owners)
+        })
+        // Set a function to be called prior to each command execution. This
+        // provides the context of the command, the message that was received,
+        // and the full name of the command that will be called.
+        //
+        // Avoid using this to determine whether a specific command should be
+        // executed. Instead, prefer using the `#[check]` macro which
+        // gives you this functionality.
+        //
+        // **Note**: Async closures are unstable, you may use them in your
+        // application if you are fine using nightly Rust.
+        // If not, we need to provide the function identifiers to the
+        // hook-functions (before, after, normal, ...).
         .before(before)
-    // Similar to `before`, except will be called directly _after_
-    // command execution.
+        // Similar to `before`, except will be called directly _after_
+        // command execution.
         .after(after)
-    // Set a function that's called whenever an attempted command-call's
-    // command could not be found.
+        // Set a function that's called whenever an attempted command-call's
+        // command could not be found.
         .unrecognised_command(unknown_command)
-    // Set a function that's called whenever a message is not a command.
+        // Set a function that's called whenever a message is not a command.
         .normal_message(normal_message)
-    // Set a function that's called whenever a command's execution didn't complete for one
-    // reason or another. For example, when a user has exceeded a rate-limit or a command
-    // can only be performed by the bot owner.
+        // Set a function that's called whenever a command's execution didn't complete for one
+        // reason or another. For example, when a user has exceeded a rate-limit or a command
+        // can only be performed by the bot owner.
         .on_dispatch_error(dispatch_error)
-    // Can't be used more than once per 5 seconds:
-        .bucket("emoji", |b| b.delay(5)).await
-    // Can't be used more than 2 times per 30 seconds, with a 5 second delay applying per channel.
-    // Optionally `await_ratelimits` will delay until the command can be executed instead of
-    // cancelling the command invocation.
-        .bucket("complicated", |b| b.limit(2).time_span(30).delay(5)
-            // The target each bucket will apply to.
-            .limit_for(LimitedFor::Channel)
-            // The maximum amount of command invocations that can be delayed per target.
-            // Setting this to 0 (default) will never await/delay commands and cancel the invocation.
-            .await_ratelimits(1)
-            // A function to call when a rate limit leads to a delay.
-            .delay_action(delay_action)).await
-    // The `#[group]` macro generates `static` instances of the options set for the group.
-    // They're made in the pattern: `#name_GROUP` for the group instance and `#name_GROUP_OPTIONS`.
-    // #name is turned all uppercase
+        // Can't be used more than once per 5 seconds:
+        .bucket("emoji", |b| b.delay(5))
+        .await
+        // Can't be used more than 2 times per 30 seconds, with a 5 second delay applying per channel.
+        // Optionally `await_ratelimits` will delay until the command can be executed instead of
+        // cancelling the command invocation.
+        .bucket("complicated", |b| {
+            b.limit(2)
+                .time_span(30)
+                .delay(5)
+                // The target each bucket will apply to.
+                .limit_for(LimitedFor::Channel)
+                // The maximum amount of command invocations that can be delayed per target.
+                // Setting this to 0 (default) will never await/delay commands and cancel the invocation.
+                .await_ratelimits(1)
+                // A function to call when a rate limit leads to a delay.
+                .delay_action(delay_action)
+        })
+        .await
+        // The `#[group]` macro generates `static` instances of the options set for the group.
+        // They're made in the pattern: `#name_GROUP` for the group instance and `#name_GROUP_OPTIONS`.
+        // #name is turned all uppercase
         .help(&MY_HELP)
         .group(&MODULATION_GROUP);
 
@@ -257,7 +267,9 @@ async fn clear(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let number = args.single::<u64>()?;
     let channel = msg.channel_id;
     let messages = channel
-        .messages(&ctx.http, |retriever| retriever.before(msg.id).limit(number))
+        .messages(&ctx.http, |retriever| {
+            retriever.before(msg.id).limit(number)
+        })
         .await?;
     channel.delete_messages(&ctx.http, messages).await?;
     channel.say(&ctx.http, "Messages deleted").await?;
