@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fmt::Write;
 use std::sync::Arc;
+use std::fs;
 
 use serenity::async_trait;
 use serenity::client::bridge::gateway::{ShardId, ShardManager};
@@ -45,7 +46,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(clear)]
+#[commands(clear, create_channel, delete_channel)]
 struct Modulation;
 
 #[help]
@@ -153,7 +154,8 @@ fn _dispatch_error_no_macro<'fut>(
 async fn main() {
     // Configure the client with your Discord bot token in the environment.
     // let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
-    let token = "";
+    let input_file = fs::read_to_string("env.txt").expect("Expected a token in the environment");
+    let token = input_file.trim();
 
     let http = Http::new(&token);
 
@@ -277,5 +279,59 @@ async fn clear(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         .delete_messages(&ctx.http, vec![msg.id])
         .await
         .expect("Error deleting message");
+    Ok(())
+}
+
+#[command]
+#[description = "Create a channel with the name specified"]
+#[usage = "<name>"]
+#[example = "test"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("MANAGE_CHANNELS")]
+#[aliases("cc")]
+#[bucket = "complicated"]
+async fn create_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let name = args.single::<String>()?;
+    let guild = msg.guild_id.unwrap();
+    let guild = guild.to_partial_guild(&ctx.http).await?;
+    if let Err(why) = guild
+        .create_channel(&ctx.http, |c| {
+            c.name(name)
+        })
+        .await
+    {
+        println!("Error creating channel: {:?}", why);
+    } else {
+        msg.channel_id.say(&ctx.http, "Channel created").await?;
+    }
+
+
+    Ok(())
+}
+
+#[command]
+#[description = "Delete a channel with the name specified"]
+#[usage = "<name>"]
+#[example = "test"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("MANAGE_CHANNELS")]
+#[aliases("dc")]
+#[bucket = "complicated"]
+async fn delete_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let name = args.single::<String>()?;
+    let guild = msg.guild_id.unwrap();
+    let guild = guild.to_partial_guild(&ctx.http).await?;
+    let channels = guild.channels(&ctx.http).await?;
+    for channel in channels {
+        if channel.1.name == name {
+            if let Err(why) = channel.1.delete(&ctx.http).await {
+                println!("Error deleting channel: {:?}", why);
+            } else {
+                msg.channel_id.say(&ctx.http, "Channel deleted").await?;
+            }
+        }
+    }
     Ok(())
 }
