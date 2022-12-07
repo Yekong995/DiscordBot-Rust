@@ -46,7 +46,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(clear, create_channel, delete_channel)]
+#[commands(clear, create_channel, delete_channel, slowmode)]
 struct Modulation;
 
 #[help]
