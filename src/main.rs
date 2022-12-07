@@ -13,7 +13,7 @@ use serenity::framework::standard::{
     Reason, StandardFramework,
 };
 use serenity::http::Http;
-use serenity::model::channel::{Channel, Message};
+use serenity::model::channel::{Channel, Message, self};
 use serenity::model::gateway::{GatewayIntents, Ready};
 use serenity::model::id::UserId;
 use serenity::model::permissions::Permissions;
@@ -332,6 +332,25 @@ async fn delete_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
                 msg.channel_id.say(&ctx.http, "Channel deleted").await?;
             }
         }
+    }
+    Ok(())
+}
+
+#[command]
+#[description = "Set this channel slowmode time"]
+#[usage = "<time>"]
+#[example = "10"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("MANAGE_CHANNELS")]
+#[bucket = "complicated"]
+async fn slowmode(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let time = args.single::<u64>()?;
+    let channel = msg.channel_id;
+    if let Err(why) = channel.edit(&ctx.http, |c| c.rate_limit_per_user(time)).await {
+        println!("Error setting slowmode: {:?}", why);
+    } else {
+        msg.channel_id.say(&ctx.http, "Slowmode set").await?;
     }
     Ok(())
 }
