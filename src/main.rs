@@ -2,9 +2,7 @@ mod commands;
 
 use std::collections::{HashMap, HashSet};
 use std::env;
-use std::fmt::Write;
 use std::sync::Arc;
-use std::fs;
 
 use serenity::async_trait;
 use serenity::client::bridge::gateway::{ShardId, ShardManager};
@@ -53,7 +51,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(clear, create_channel, delete_channel, slowmode)]
+#[commands(clear, create_channel, delete_channel, slowmode, rename_channel)]
 struct Moderator;
 
 #[help]

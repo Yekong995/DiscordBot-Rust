@@ -43,11 +43,14 @@ async fn create_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
     let guild = guild.to_partial_guild(&ctx.http).await?;
     if let Err(why) = guild
         .create_channel(&ctx.http, |c| {
-            c.name(name)
+            c.name(name);
+            c.kind(ChannelType::Text);
+            c.topic(format!("This channel created by {}", msg.author.name))
         })
         .await
     {
         println!("Error creating channel: {:?}", why);
+        msg.channel_id.say(&ctx.http, "Error creating channel").await?;
     } else {
         msg.channel_id.say(&ctx.http, "Channel created").await?;
     }
@@ -74,6 +77,7 @@ async fn delete_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
         if channel.1.name == name {
             if let Err(why) = channel.1.delete(&ctx.http).await {
                 println!("Error deleting channel: {:?}", why);
+                msg.channel_id.say(&ctx.http, "Error deleting channel").await?;
             } else {
                 msg.channel_id.say(&ctx.http, "Channel deleted").await?;
             }
@@ -95,8 +99,30 @@ async fn slowmode(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
     let channel = msg.channel_id;
     if let Err(why) = channel.edit(&ctx.http, |c| c.rate_limit_per_user(time)).await {
         println!("Error setting slowmode: {:?}", why);
+        msg.channel_id.say(&ctx.http, "Error setting slowmode").await?;
     } else {
         msg.channel_id.say(&ctx.http, format!("Slowmode set to {} seconds", time)).await?;
+    }
+    Ok(())
+}
+
+#[command]
+#[description = "Rename this channel with the name specified"]
+#[usage = "<name>"]
+#[example = "test"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("MANAGE_CHANNELS")]
+#[aliases("rc")]
+#[bucket = "complicated"]
+async fn rename_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let name = args.single::<String>()?;
+    let channel = msg.channel_id;
+    if let Err(why) = channel.edit(&ctx.http, |c| c.name(name)).await {
+        println!("Error renaming channel: {:?}", why);
+        msg.channel_id.say(&ctx.http, "Error renaming channel").await?;
+    } else {
+        msg.channel_id.say(&ctx.http, "Channel renamed").await?;
     }
     Ok(())
 }
