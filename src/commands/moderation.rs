@@ -126,3 +126,35 @@ async fn rename_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
     }
     Ok(())
 }
+
+#[command]
+#[description = "Turn NSFW on/off for specified channel"]
+#[usage = "#test"]
+#[example = "#test"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("MANAGE_CHANNELS")]
+#[aliases("nsfw")]
+#[bucket = "complicated"]
+async fn nsfw_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let channel = args.single::<ChannelId>()?;
+    let channel = channel.to_channel(&ctx.http).await?;
+    let mut channel = channel.guild().unwrap();
+    let nsfw = channel.is_nsfw();
+    if nsfw {
+        if let Err(why) = channel.edit(&ctx, |c| c.nsfw(false)).await {
+            println!("Error turn NSFW channel: {:?}", why);
+            msg.channel_id.say(&ctx.http, "Error turn NSFW channel").await?;
+        } else {
+            msg.channel_id.say(&ctx.http, "NSFW turned off").await?;
+        }
+    } else {
+        if let Err(why) = channel.edit(&ctx, |c| c.nsfw(true)).await {
+            println!("Error turn NSFW channel: {:?}", why);
+            msg.channel_id.say(&ctx.http, "Error turn NSFW channel").await?;
+        } else {
+            msg.channel_id.say(&ctx.http, "NSFW turned on").await?;
+        }
+    }
+    Ok(())
+}

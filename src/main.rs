@@ -51,7 +51,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(clear, create_channel, delete_channel, slowmode, rename_channel)]
+#[commands(clear, create_channel, delete_channel, slowmode, rename_channel, nsfw_channel)]
 struct Moderator;
 
 #[help]
