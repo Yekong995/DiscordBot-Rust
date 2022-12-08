@@ -23,6 +23,8 @@ use serenity::prelude::*;
 use serenity::utils::{content_safe, ContentSafeOptions};
 use tokio::sync::Mutex;
 
+use dotenv::dotenv;
+
 // import the command modules
 use crate::commands::moderation::*;
 
@@ -158,7 +160,8 @@ fn _dispatch_error_no_macro<'fut>(
 #[tokio::main]
 async fn main() {
     // Configure the client with your Discord bot token in the environment.
-    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the .env file");
+    dotenv().expect("Failed to read .env file");
+    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     let http = Http::new(&token);
 
