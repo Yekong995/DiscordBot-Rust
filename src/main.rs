@@ -1,3 +1,5 @@
+mod commands;
+
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fmt::Write;
