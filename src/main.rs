@@ -158,9 +158,7 @@ fn _dispatch_error_no_macro<'fut>(
 #[tokio::main]
 async fn main() {
     // Configure the client with your Discord bot token in the environment.
-    // let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
-    let input_file = fs::read_to_string("env.txt").expect("Expected a token in the environment");
-    let token = input_file.trim();
+    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the .env file");
 
     let http = Http::new(&token);
 
