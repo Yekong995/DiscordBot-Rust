@@ -25,6 +25,7 @@ use dotenv::dotenv;
 
 // import the command modules
 use crate::commands::moderation::*;
+use crate::commands::utility::*;
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -53,6 +54,10 @@ impl EventHandler for Handler {
 #[group]
 #[commands(clear, create_channel, delete_channel, slowmode, rename_channel, nsfw_channel)]
 struct Moderator;
+
+#[group]
+#[commands(ping)]
+struct Utility;
 
 #[help]
 #[command_not_found_text = "Could not find: `{}`."]
@@ -241,7 +246,8 @@ async fn main() {
         // They're made in the pattern: `#name_GROUP` for the group instance and `#name_GROUP_OPTIONS`.
         // #name is turned all uppercase
         .help(&MY_HELP)
-        .group(&MODERATOR_GROUP);
+        .group(&MODERATOR_GROUP)
+        .group(&UTILITY_GROUP);
 
     let intents = GatewayIntents::all();
     let mut client = Client::builder(&token, intents)
