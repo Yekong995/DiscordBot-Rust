@@ -164,3 +164,73 @@ async fn nsfw_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandRe
     }
     Ok(())
 }
+
+#[command]
+#[description = "Kick a user from the server"]
+#[usage = "<user>"]
+#[example = "@test#1234"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("KICK_MEMBERS")]
+#[bucket = "complicated"]
+#[only_in(guilds)]
+async fn kick(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let user = args.single::<UserId>()?;
+    let reason = "Kick by bot";
+    let guild = msg.guild_id.unwrap();
+    let guild = guild.to_partial_guild(&ctx.http).await?;
+    let member = guild.member(&ctx.http, user).await?;
+    if let Err(why) = member.kick_with_reason(&ctx.http, &reason).await {
+        println!("Error kicking user: {:?}", why);
+        msg.channel_id.say(&ctx.http, "Error kicking user").await?;
+    } else {
+        msg.channel_id.say(&ctx.http, "User has been kicked.").await?;
+    }
+    Ok(())
+}
+
+#[command]
+#[description = "Ban a user from the server"]
+#[usage = "<user> <reason>"]
+#[example = "@test#1234 test"]
+#[min_args(1)]
+#[max_args(2)]
+#[required_permissions("BAN_MEMBERS")]
+#[bucket = "complicated"]
+#[only_in(guilds)]
+async fn ban(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let user = args.single::<UserId>()?;
+    let reason = args.single::<String>().unwrap_or("No reason".to_string());
+    let guild = msg.guild_id.unwrap();
+    let guild = guild.to_partial_guild(&ctx.http).await?;
+    let member = guild.member(&ctx.http, user).await?;
+    if let Err(why) = member.ban_with_reason(&ctx.http, 0, &reason).await {
+        println!("Error banning user: {:?}", why);
+        msg.channel_id.say(&ctx.http, "Error banning user").await?;
+    } else {
+        msg.channel_id.say(&ctx.http, format!("User has been banned. Reason: {}", reason)).await?;
+    }
+    Ok(())
+}
+
+#[command]
+#[description = "Unban a user from the server"]
+#[usage = "<user>"]
+#[example = "@test#1234"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("BAN_MEMBERS")]
+#[bucket = "complicated"]
+#[only_in(guilds)]
+async fn unban(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let user = args.single::<UserId>()?;
+    let guild = msg.guild_id.unwrap();
+    let guild = guild.to_partial_guild(&ctx.http).await?;
+    if let Err(why) = guild.unban(&ctx.http, user).await {
+        println!("Error unbanning user: {:?}", why);
+        msg.channel_id.say(&ctx.http, "Error unbanning user").await?;
+    } else {
+        msg.channel_id.say(&ctx.http, "User has been unbanned.").await?;
+    }
+    Ok(())
+}

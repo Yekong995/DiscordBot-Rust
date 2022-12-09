@@ -52,7 +52,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(clear, create_channel, delete_channel, slowmode, rename_channel, nsfw_channel)]
+#[commands(clear, create_channel, delete_channel, slowmode, rename_channel, nsfw_channel, kick, ban, unban)]
 struct Moderator;
 
 #[group]
