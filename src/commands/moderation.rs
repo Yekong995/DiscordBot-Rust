@@ -11,6 +11,7 @@ use serenity::prelude::*;
 #[max_args(1)]
 #[required_permissions("MANAGE_MESSAGES")]
 #[bucket = "complicated"]
+#[only_in(guilds)]
 async fn clear(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let number = args.single::<u64>()?;
     let channel = msg.channel_id;
@@ -37,6 +38,7 @@ async fn clear(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 #[required_permissions("MANAGE_CHANNELS")]
 #[aliases("cc")]
 #[bucket = "complicated"]
+#[only_in(guilds)]
 async fn create_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let name = args.single::<String>()?;
     let guild = msg.guild_id.unwrap();
@@ -68,6 +70,7 @@ async fn create_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
 #[required_permissions("MANAGE_CHANNELS")]
 #[aliases("dc")]
 #[bucket = "complicated"]
+#[only_in(guilds)]
 async fn delete_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let name = args.single::<String>()?;
     let guild = msg.guild_id.unwrap();
@@ -94,6 +97,7 @@ async fn delete_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
 #[max_args(1)]
 #[required_permissions("MANAGE_CHANNELS")]
 #[bucket = "complicated"]
+#[only_in(guilds)]
 async fn slowmode(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let time = args.single::<u64>()?;
     let channel = msg.channel_id;
@@ -115,6 +119,7 @@ async fn slowmode(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
 #[required_permissions("MANAGE_CHANNELS")]
 #[aliases("rc")]
 #[bucket = "complicated"]
+#[only_in(guilds)]
 async fn rename_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let name = args.single::<String>()?;
     let channel = msg.channel_id;
@@ -136,6 +141,7 @@ async fn rename_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
 #[required_permissions("MANAGE_CHANNELS")]
 #[aliases("nsfw")]
 #[bucket = "complicated"]
+#[only_in(guilds)]
 async fn nsfw_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let channel = args.single::<ChannelId>()?;
     let channel = channel.to_channel(&ctx.http).await?;
