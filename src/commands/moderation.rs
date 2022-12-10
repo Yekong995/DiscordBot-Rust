@@ -234,3 +234,30 @@ async fn unban(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     }
     Ok(())
 }
+
+#[command]
+#[description = "Create a voice channel with specified name"]
+#[usage = "<name>"]
+#[example = "test"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("MANAGE_CHANNELS")]
+#[bucket = "complicated"]
+#[aliases("createvc")]
+#[only_in(guilds)]
+async fn create_voice_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let name = args.single::<String>()?;
+    let guild = msg.guild_id.unwrap();
+    let guild = guild.to_partial_guild(&ctx.http).await?;
+    if let Err(why) = guild.create_channel(&ctx.http, |c| {
+        c.name(&name);
+        c.kind(ChannelType::Voice)
+    })
+    .await {
+        println!("Error creating voice channel: {:?}", why);
+        msg.channel_id.say(&ctx.http, "Error creating voice channel").await?;
+    } else {
+        msg.channel_id.say(&ctx.http, "Voice channel created").await?;
+    }
+    Ok(())
+}
