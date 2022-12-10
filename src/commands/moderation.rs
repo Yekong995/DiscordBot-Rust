@@ -191,8 +191,8 @@ async fn kick(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
 #[command]
 #[description = "Ban a user from the server"]
-#[usage = "<user> <reason>"]
-#[example = "@test#1234 test"]
+#[usage = "<user>"]
+#[example = "@test#1234"]
 #[min_args(1)]
 #[max_args(2)]
 #[required_permissions("BAN_MEMBERS")]
@@ -200,7 +200,7 @@ async fn kick(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 #[only_in(guilds)]
 async fn ban(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let user = args.single::<UserId>()?;
-    let reason = args.single::<String>().unwrap_or("No reason".to_string());
+    let reason = "Kick by bot";
     let guild = msg.guild_id.unwrap();
     let guild = guild.to_partial_guild(&ctx.http).await?;
     let member = guild.member(&ctx.http, user).await?;
