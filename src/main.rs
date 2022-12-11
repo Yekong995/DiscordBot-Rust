@@ -22,6 +22,7 @@ use serenity::utils::{content_safe, ContentSafeOptions};
 use tokio::sync::Mutex;
 
 use dotenv::dotenv;
+use regex::Regex;
 
 // import the command modules
 use crate::commands::moderation::*;
@@ -48,6 +49,17 @@ struct Handler;
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
+    }
+
+    async fn message(&self, ctx: Context, msg: Message) {
+        if msg.author.bot {
+            return;
+        }
+        let pattern = Regex::new(r"(https?://\S+)").unwrap();
+        if let Some(caps) = pattern.captures(&msg.content) {
+            let url = &caps[1];
+            println!("Found a link: {}", url);
+        }
     }
 }
 
