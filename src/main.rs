@@ -58,7 +58,7 @@ impl EventHandler for Handler {
         let pattern = Regex::new(r"(https?://\S+)").unwrap();
         if let Some(caps) = pattern.captures(&msg.content) {
             let url = &caps[1];
-            println!("Found a link: {}", url);
+            // println!("Found a link: {}", url);
         }
     }
 }
