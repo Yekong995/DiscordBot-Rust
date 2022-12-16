@@ -25,7 +25,10 @@ async fn ping(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             m.embed(|e| {
                 e.title("Status");
                 e.description(format!("Status: {}", status));
-                e.timestamp(Timestamp::now())
+                e.timestamp(Timestamp::now());
+                // red: 0xff0000
+                // green: 0x00ff00
+                e.color(0x00ff00)
             });
             m
         })
