@@ -2,7 +2,6 @@ use serenity::framework::standard::{Args, CommandResult};
 use serenity::framework::standard::macros::command;
 use serenity::model::channel::Message;
 use serenity::model::Timestamp;
-use serenity::model::prelude::*;
 use serenity::prelude::*;
 use reqwest;
 

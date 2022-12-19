@@ -13,16 +13,18 @@ use serenity::framework::standard::{
     Reason, StandardFramework,
 };
 use serenity::http::Http;
-use serenity::model::channel::{Channel, Message, self};
+use serenity::model::channel::{Channel, Message};
 use serenity::model::gateway::{GatewayIntents, Ready};
 use serenity::model::id::UserId;
+use serenity::model::prelude::Member;
+use serenity::model::id::ChannelId;
+use serenity::model::prelude::{GuildId, User};
 use serenity::model::permissions::Permissions;
 use serenity::prelude::*;
 use serenity::utils::{content_safe, ContentSafeOptions};
 use tokio::sync::Mutex;
 
 use dotenv::dotenv;
-use regex::Regex;
 
 // import the command modules
 use crate::commands::moderation::*;
@@ -51,15 +53,17 @@ impl EventHandler for Handler {
         println!("{} is connected!", ready.user.name);
     }
 
-    async fn message(&self, ctx: Context, msg: Message) {
-        if msg.author.bot {
-            return;
-        }
-        let pattern = Regex::new(r"(https?://\S+)").unwrap();
-        if let Some(caps) = pattern.captures(&msg.content) {
-            let url = &caps[1];
-            // println!("Found a link: {}", url);
-        }
+    async fn guild_member_addition(&self, ctx: Context, new_member: Member) {
+        let channel_id = 1043010095509942294;
+        let channel = ChannelId(channel_id);
+        let _ = channel.say(&ctx.http, format!("Welcome to the server, {}!", new_member.user.mention())).await;
+        
+    }
+
+    async fn guild_member_removal(&self, ctx: Context, _guild_id: GuildId, user: User, _member_data: Option<Member>) {
+        let channel_id = 1043010095509942294;
+        let channel = ChannelId(channel_id);
+        let _ = channel.say(&ctx.http, format!("{} has left the server.", user.mention())).await;
     }
 }
 
