@@ -1,9 +1,9 @@
-use serenity::framework::standard::{Args, CommandResult};
+use reqwest;
 use serenity::framework::standard::macros::command;
+use serenity::framework::standard::{Args, CommandResult};
 use serenity::model::channel::Message;
 use serenity::model::Timestamp;
 use serenity::prelude::*;
-use reqwest;
 
 #[command]
 #[description = "Get the status of the website."]
@@ -32,7 +32,6 @@ async fn ping(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             m
         })
         .await;
-    // msg.channel_id.say(&ctx.http, format!("Status: {}", status)).await?;
     if let Err(why) = msg_embed {
         println!("Error sending message: {:?}", why);
     }
