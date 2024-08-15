@@ -15,11 +15,11 @@ use serenity::framework::standard::{
 use serenity::http::Http;
 use serenity::model::channel::{Channel, Message};
 use serenity::model::gateway::{GatewayIntents, Ready};
-use serenity::model::id::UserId;
-use serenity::model::prelude::Member;
 use serenity::model::id::ChannelId;
-use serenity::model::prelude::{GuildId, User};
+use serenity::model::id::UserId;
 use serenity::model::permissions::Permissions;
+use serenity::model::prelude::Member;
+use serenity::model::prelude::{GuildId, User};
 use serenity::prelude::*;
 use serenity::utils::{content_safe, ContentSafeOptions};
 use tokio::sync::Mutex;
@@ -56,20 +56,45 @@ impl EventHandler for Handler {
     async fn guild_member_addition(&self, ctx: Context, new_member: Member) {
         let channel_id = 1043010095509942294;
         let channel = ChannelId(channel_id);
-        let _ = channel.say(&ctx.http, format!("Welcome to the server, {}!", new_member.user.mention())).await;
-        
+        let _ = channel
+            .say(
+                &ctx.http,
+                format!("Welcome to the server, {}!", new_member.user.mention()),
+            )
+            .await;
     }
 
-    async fn guild_member_removal(&self, ctx: Context, _guild_id: GuildId, user: User, _member_data: Option<Member>) {
+    async fn guild_member_removal(
+        &self,
+        ctx: Context,
+        _guild_id: GuildId,
+        user: User,
+        _member_data: Option<Member>,
+    ) {
         let channel_id = 1043010095509942294;
         let channel = ChannelId(channel_id);
-        let _ = channel.say(&ctx.http, format!("{} has left the server.", user.mention())).await;
+        let _ = channel
+            .say(
+                &ctx.http,
+                format!("{} has left the server.", user.mention()),
+            )
+            .await;
     }
 }
 
 #[group]
-#[commands(clear, create_channel, delete_channel, slowmode, rename_channel, nsfw_channel, kick, ban, unban,
-    create_voice_channel)]
+#[commands(
+    clear,
+    create_channel,
+    delete_channel,
+    slowmode,
+    rename_channel,
+    nsfw_channel,
+    kick,
+    ban,
+    unban,
+    create_voice_channel
+)]
 struct Moderator;
 
 #[group]
