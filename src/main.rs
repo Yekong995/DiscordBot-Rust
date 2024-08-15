@@ -151,14 +151,20 @@ async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_resul
 }
 
 #[hook]
-async fn unknown_command(_ctx: &Context, _msg: &Message, unknown_command_name: &str) {
+async fn unknown_command(ctx: &Context, msg: &Message, unknown_command_name: &str) {
     println!("Could not find command named '{}'", unknown_command_name);
+    let _ = msg
+        .channel_id
+        .say(&ctx.http, "Could not find command.")
+        .await;
+    let _ = msg.react(ctx, '❓').await;
 }
 
-#[hook]
-async fn normal_message(_ctx: &Context, msg: &Message) {
-    println!("Message is not a command '{}'", msg.content);
-}
+// This hook is used to do something when user sends a message that is not a command.
+// #[hook]
+// async fn normal_message(_ctx: &Context, msg: &Message) {
+//     println!("Message is not a command '{}'", msg.content);
+// }
 
 #[hook]
 async fn delay_action(ctx: &Context, msg: &Message) {
@@ -263,8 +269,6 @@ async fn main() {
         // Set a function that's called whenever an attempted command-call's
         // command could not be found.
         .unrecognised_command(unknown_command)
-        // Set a function that's called whenever a message is not a command.
-        .normal_message(normal_message)
         // Set a function that's called whenever a command's execution didn't complete for one
         // reason or another. For example, when a user has exceeded a rate-limit or a command
         // can only be performed by the bot owner.
