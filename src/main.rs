@@ -83,6 +83,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
+#[summary = "Moderation commands"]
 #[commands(
     clear,
     create_channel,
@@ -98,6 +99,7 @@ impl EventHandler for Handler {
 struct Moderator;
 
 #[group]
+#[summary = "Utility commands"]
 #[commands(ping)]
 struct Utility;
 
@@ -106,6 +108,8 @@ struct Utility;
 #[max_levenshtein_distance(3)]
 #[indention_prefix = "+"]
 #[lacking_permissions = "Hide"]
+#[lacking_role = "Nothing"]
+#[wrong_channel = "Strike"]
 async fn my_help(
     context: &Context,
     msg: &Message,
