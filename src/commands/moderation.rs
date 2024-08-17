@@ -1,5 +1,5 @@
-use serenity::framework::standard::{Args, CommandResult};
 use serenity::framework::standard::macros::command;
+use serenity::framework::standard::{Args, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
@@ -20,12 +20,16 @@ async fn clear(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             retriever.before(msg.id).limit(number)
         })
         .await?;
-    channel.delete_messages(&ctx.http, messages).await?;
-    channel.say(&ctx.http, "Messages deleted").await?;
+
+    channel
+        .delete_messages(&ctx.http, messages)
+        .await
+        .expect("Error deleting message");
     channel
         .delete_messages(&ctx.http, vec![msg.id])
         .await
         .expect("Error deleting message");
+    channel.say(&ctx.http, "Messages deleted").await?;
     Ok(())
 }
 
@@ -52,11 +56,12 @@ async fn create_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
         .await
     {
         println!("Error creating channel: {:?}", why);
-        msg.channel_id.say(&ctx.http, "Error creating channel").await?;
+        msg.channel_id
+            .say(&ctx.http, "Error creating channel")
+            .await?;
     } else {
         msg.channel_id.say(&ctx.http, "Channel created").await?;
     }
-
 
     Ok(())
 }
@@ -64,7 +69,7 @@ async fn create_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
 #[command]
 #[description = "Delete a channel with the name specified"]
 #[usage = "<name>"]
-#[example = "test"]
+#[example = "#test"]
 #[min_args(1)]
 #[max_args(1)]
 #[required_permissions("MANAGE_CHANNELS")]
@@ -72,19 +77,15 @@ async fn create_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
 #[bucket = "complicated"]
 #[only_in(guilds)]
 async fn delete_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let name = args.single::<String>()?;
-    let guild = msg.guild_id.unwrap();
-    let guild = guild.to_partial_guild(&ctx.http).await?;
-    let channels = guild.channels(&ctx.http).await?;
-    for channel in channels {
-        if channel.1.name == name {
-            if let Err(why) = channel.1.delete(&ctx.http).await {
-                println!("Error deleting channel: {:?}", why);
-                msg.channel_id.say(&ctx.http, "Error deleting channel").await?;
-            } else {
-                msg.channel_id.say(&ctx.http, "Channel deleted").await?;
-            }
-        }
+    let channel_id = args.single::<ChannelId>()?;
+
+    if let Err(why) = channel_id.delete(&ctx.http).await {
+        println!("Error deleting channel: {:?}", why);
+        msg.channel_id
+            .say(&ctx.http, "Error deleting channel")
+            .await?;
+    } else {
+        msg.channel_id.say(&ctx.http, "Channel deleted").await?;
     }
     Ok(())
 }
@@ -101,11 +102,18 @@ async fn delete_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
 async fn slowmode(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let time = args.single::<u64>()?;
     let channel = msg.channel_id;
-    if let Err(why) = channel.edit(&ctx.http, |c| c.rate_limit_per_user(time)).await {
+    if let Err(why) = channel
+        .edit(&ctx.http, |c| c.rate_limit_per_user(time))
+        .await
+    {
         println!("Error setting slowmode: {:?}", why);
-        msg.channel_id.say(&ctx.http, "Error setting slowmode").await?;
+        msg.channel_id
+            .say(&ctx.http, "Error setting slowmode")
+            .await?;
     } else {
-        msg.channel_id.say(&ctx.http, format!("Slowmode set to {} seconds", time)).await?;
+        msg.channel_id
+            .say(&ctx.http, format!("Slowmode set to {} seconds", time))
+            .await?;
     }
     Ok(())
 }
@@ -125,7 +133,9 @@ async fn rename_channel(ctx: &Context, msg: &Message, mut args: Args) -> Command
     let channel = msg.channel_id;
     if let Err(why) = channel.edit(&ctx.http, |c| c.name(name)).await {
         println!("Error renaming channel: {:?}", why);
-        msg.channel_id.say(&ctx.http, "Error renaming channel").await?;
+        msg.channel_id
+            .say(&ctx.http, "Error renaming channel")
+            .await?;
     } else {
         msg.channel_id.say(&ctx.http, "Channel renamed").await?;
     }
@@ -147,17 +157,15 @@ async fn nsfw_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandRe
     let channel = channel.to_channel(&ctx.http).await?;
     let mut channel = channel.guild().unwrap();
     let nsfw = channel.is_nsfw();
-    if nsfw {
-        if let Err(why) = channel.edit(&ctx, |c| c.nsfw(false)).await {
-            println!("Error turn NSFW channel: {:?}", why);
-            msg.channel_id.say(&ctx.http, "Error turn NSFW channel").await?;
-        } else {
-            msg.channel_id.say(&ctx.http, "NSFW turned off").await?;
-        }
+
+    if let Err(why) = channel.edit(&ctx, |c| c.nsfw(!nsfw)).await {
+        println!("Error turn NSFW channel: {:?}", why);
+        msg.channel_id
+            .say(&ctx.http, "Error turn NSFW channel")
+            .await?;
     } else {
-        if let Err(why) = channel.edit(&ctx, |c| c.nsfw(true)).await {
-            println!("Error turn NSFW channel: {:?}", why);
-            msg.channel_id.say(&ctx.http, "Error turn NSFW channel").await?;
+        if nsfw {
+            msg.channel_id.say(&ctx.http, "NSFW turned off").await?;
         } else {
             msg.channel_id.say(&ctx.http, "NSFW turned on").await?;
         }
@@ -184,7 +192,9 @@ async fn kick(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         println!("Error kicking user: {:?}", why);
         msg.channel_id.say(&ctx.http, "Error kicking user").await?;
     } else {
-        msg.channel_id.say(&ctx.http, "User has been kicked.").await?;
+        msg.channel_id
+            .say(&ctx.http, "User has been kicked.")
+            .await?;
     }
     Ok(())
 }
@@ -208,7 +218,12 @@ async fn ban(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         println!("Error banning user: {:?}", why);
         msg.channel_id.say(&ctx.http, "Error banning user").await?;
     } else {
-        msg.channel_id.say(&ctx.http, format!("User has been banned. Reason: {}", reason)).await?;
+        msg.channel_id
+            .say(
+                &ctx.http,
+                format!("User has been banned. Reason: {}", reason),
+            )
+            .await?;
     }
     Ok(())
 }
@@ -228,9 +243,13 @@ async fn unban(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild = guild.to_partial_guild(&ctx.http).await?;
     if let Err(why) = guild.unban(&ctx.http, user).await {
         println!("Error unbanning user: {:?}", why);
-        msg.channel_id.say(&ctx.http, "Error unbanning user").await?;
+        msg.channel_id
+            .say(&ctx.http, "Error unbanning user")
+            .await?;
     } else {
-        msg.channel_id.say(&ctx.http, "User has been unbanned.").await?;
+        msg.channel_id
+            .say(&ctx.http, "User has been unbanned.")
+            .await?;
     }
     Ok(())
 }
@@ -249,15 +268,48 @@ async fn create_voice_channel(ctx: &Context, msg: &Message, mut args: Args) -> C
     let name = args.single::<String>()?;
     let guild = msg.guild_id.unwrap();
     let guild = guild.to_partial_guild(&ctx.http).await?;
-    if let Err(why) = guild.create_channel(&ctx.http, |c| {
-        c.name(&name);
-        c.kind(ChannelType::Voice)
-    })
-    .await {
+    if let Err(why) = guild
+        .create_channel(&ctx.http, |c| {
+            c.name(&name);
+            c.kind(ChannelType::Voice)
+        })
+        .await
+    {
         println!("Error creating voice channel: {:?}", why);
-        msg.channel_id.say(&ctx.http, "Error creating voice channel").await?;
+        msg.channel_id
+            .say(&ctx.http, "Error creating voice channel")
+            .await?;
     } else {
-        msg.channel_id.say(&ctx.http, "Voice channel created").await?;
+        msg.channel_id
+            .say(&ctx.http, "Voice channel created")
+            .await?;
     }
+    Ok(())
+}
+
+#[command]
+#[description = "Delete a voice channel with specified name"]
+#[usage = "<name>"]
+#[example = "#test"]
+#[min_args(1)]
+#[max_args(1)]
+#[required_permissions("MANAGE_CHANNELS")]
+#[bucket = "complicated"]
+#[aliases("deletevc")]
+#[only_in(guilds)]
+async fn delete_voice_channel(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let channel_id: ChannelId = args.single::<ChannelId>()?;
+
+    if let Err(why) = channel_id.delete(&ctx.http).await {
+        println!("Error deleting voice channel: {:?}", why);
+        msg.channel_id
+            .say(&ctx.http, "Error deleting voice channel")
+            .await?;
+    } else {
+        msg.channel_id
+            .say(&ctx.http, "Voice channel deleted")
+            .await?;
+    }
+
     Ok(())
 }

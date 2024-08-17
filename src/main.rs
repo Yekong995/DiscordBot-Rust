@@ -273,16 +273,13 @@ async fn main() {
         // reason or another. For example, when a user has exceeded a rate-limit or a command
         // can only be performed by the bot owner.
         .on_dispatch_error(dispatch_error)
-        // Can't be used more than once per 5 seconds:
-        .bucket("emoji", |b| b.delay(5))
-        .await
         // Can't be used more than 2 times per 30 seconds, with a 5 second delay applying per channel.
         // Optionally `await_ratelimits` will delay until the command can be executed instead of
         // cancelling the command invocation.
         .bucket("complicated", |b| {
             b.limit(2)
-                .time_span(30)
-                .delay(5)
+                .time_span(10)
+                .delay(3)
                 // The target each bucket will apply to.
                 .limit_for(LimitedFor::Channel)
                 // The maximum amount of command invocations that can be delayed per target.
